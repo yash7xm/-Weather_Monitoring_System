@@ -48,11 +48,13 @@ func FetchWeather(city string) (*WeatherResponse, error) {
 	_, err = db.DB.Exec(`INSERT INTO weather_data (city, temperature, feels_like, main_condition, timestamp) VALUES ($1, $2, $3, $4, $5)`,
 		city, tempC, feelsLikeC, mainCondition, timestamp)
 
+	CheckThresholds(city, tempC)
+
 	return &weatherResp, err
 }
 
 func StartWeatherMonitoring() {
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	for range ticker.C {
 		for _, city := range []string{"Delhi", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Hyderabad"} {
 			go func(city string) {
