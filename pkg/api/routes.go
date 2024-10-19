@@ -9,8 +9,7 @@ func SetupRoutes() *mux.Router {
 
 	// Define your routes
 	r.HandleFunc("/api/weather/current", FetchCurrentWeather).Methods("GET")
-	r.HandleFunc("/api/weather", GetWeatherSummary).Methods("GET")
-	// r.HandleFunc("/api/alerts", CreateAlert).Methods("POST")
+	r.HandleFunc("/api/weather/summary", GetDailyWeatherSummary).Methods("GET")
 
 	return r
 }
