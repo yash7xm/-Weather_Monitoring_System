@@ -7,6 +7,7 @@ import (
 	"github.com/yash7xm/Weather_Monitoring_System/config"
 	"github.com/yash7xm/Weather_Monitoring_System/pkg/api"
 	db "github.com/yash7xm/Weather_Monitoring_System/pkg/storage"
+	"github.com/yash7xm/Weather_Monitoring_System/pkg/weather"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 
 	// Initialize the database connection
 	db.InitDB()
-	defer db.DB.Close() // Close the DB connection when the application shuts down
+	defer db.DB.Close()
 
 	// Run database migrations
 	err := db.RunMigrations()
@@ -24,7 +25,7 @@ func main() {
 	}
 
 	// Start periodic weather fetching (every 5 minutes)
-	// go weather.StartWeatherMonitoring(db)
+	go weather.StartWeatherMonitoring()
 
 	// Set up API routes
 	router := api.SetupRoutes()
@@ -32,7 +33,7 @@ func main() {
 	// Start server
 	port := config.Config.PORT
 	if port == "" {
-		port = "8080" // Default port if PORT is not set (for local development)
+		port = "8080"
 	}
 
 	log.Printf("Server running on port %s", port)

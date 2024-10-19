@@ -3,13 +3,13 @@ package weather
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
+
 	"github.com/yash7xm/Weather_Monitoring_System/config"
+	db "github.com/yash7xm/Weather_Monitoring_System/pkg/storage"
 )
-
-var apiKey = config.Config.API_KEY
-
-// const cities = "Delhi,Mumbai,Chennai,Bangalore,Kolkata,Hyderabad"
 
 type WeatherResponse struct {
 	Main struct {
@@ -19,44 +19,50 @@ type WeatherResponse struct {
 	Weather []struct {
 		Main string `json:"main"`
 	} `json:"weather"`
-	Dt int64 `json:"dt"`
+	Timestamp int64 `json:"dt"`
 }
 
-// FetchWeather fetches current weather data for the given city from OpenWeatherMap API
+// FetchWeather fetches weather data from the OpenWeatherMap API and stores it in the database
 func FetchWeather(city string) (*WeatherResponse, error) {
-	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric", city, apiKey)
+	apiKey := config.Config.API_KEY
+	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s", city, apiKey)
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Check the response status
-	if resp.StatusCode != http.StatusOK {
-		// Read the response body for debugging
-		var errorResponse map[string]interface{}
-		json.NewDecoder(resp.Body).Decode(&errorResponse)
-		return nil, fmt.Errorf("failed to fetch weather: %s", errorResponse["message"])
-	}
-
 	var weatherResp WeatherResponse
 	if err := json.NewDecoder(resp.Body).Decode(&weatherResp); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
-	return &weatherResp, nil
+
+	// Convert temperature from Kelvin to Celsius
+	tempC := weatherResp.Main.Temp - 273.15
+	feelsLikeC := weatherResp.Main.FeelsLike - 273.15
+	mainCondition := weatherResp.Weather[0].Main
+
+	// Insert data into the database
+	timestamp := time.Unix(weatherResp.Timestamp, 0)
+	_, err = db.DB.Exec(`INSERT INTO weather_data (city, temperature, feels_like, main_condition, timestamp) VALUES ($1, $2, $3, $4, $5)`,
+		city, tempC, feelsLikeC, mainCondition, timestamp)
+
+	return &weatherResp, err
 }
 
-// func StartWeatherMonitoring(db *DB) {
-// 	ticker := time.NewTicker(5 * time.Minute) // Fetch every 5 minutes
-// 	for range ticker.C {
-// 		for _, city := range []string{"Delhi", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Hyderabad"} {
-// 			weather, err := FetchWeather(city)
-// 			if err != nil {
-// 				fmt.Println("Error fetching weather data:", err)
-// 				continue
-// 			}
-// 			fmt.Println("Weather in", city, ":", weather)
-// 			// Process and store the data in the database
-// 		}
-// 	}
-// }
+func StartWeatherMonitoring() {
+	ticker := time.NewTicker(5 * time.Minute)
+	for range ticker.C {
+		for _, city := range []string{"Delhi", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Hyderabad"} {
+			go func(city string) {
+				weather, err := FetchWeather(city)
+				if err != nil {
+					log.Printf("Error fetching weather data for %s: %v", city, err)
+					return
+				}
+				log.Printf("Fetched weather data for %s: %+v", city, weather)
+			}(city)
+		}
+	}
+}
