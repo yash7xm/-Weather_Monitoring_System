@@ -3,27 +3,22 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/yash7xm/Weather_Monitoring_System/config"
 	"github.com/yash7xm/Weather_Monitoring_System/pkg/api"
 	db "github.com/yash7xm/Weather_Monitoring_System/pkg/storage"
 )
 
 func main() {
-
-	// Load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
+	// Initialize configuration
+	config.Init()
 
 	// Initialize the database connection
 	db.InitDB()
 	defer db.DB.Close() // Close the DB connection when the application shuts down
 
 	// Run database migrations
-	err = db.RunMigrations()
+	err := db.RunMigrations()
 	if err != nil {
 		log.Fatalf("Error running migrations: %v", err)
 	}
@@ -35,12 +30,12 @@ func main() {
 	router := api.SetupRoutes()
 
 	// Start server
-	port := os.Getenv("PORT")
+	port := config.Config.PORT
 	if port == "" {
 		port = "8080" // Default port if PORT is not set (for local development)
 	}
 
-	log.Println("Server running on port 8080")
+	log.Printf("Server running on port %s", port)
 	if err := http.ListenAndServe(":"+port, router); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

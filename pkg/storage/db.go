@@ -4,16 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/yash7xm/Weather_Monitoring_System/config"
 )
 
 var DB *sql.DB
 
 // Initialize the database connection
 func InitDB() {
-	connStr := os.Getenv("DATABASE_URL")
+	connStr := config.Config.DATABASE_URL
 	if connStr == "" {
 		log.Fatalf("DATABASE_URL is not set")
 	}

@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"github.com/yash7xm/Weather_Monitoring_System/config"
 )
 
-const apiKey = "846d09cb2e8f3a994b366bb5a34e8335"
+var apiKey = config.Config.API_KEY
 
 // const cities = "Delhi,Mumbai,Chennai,Bangalore,Kolkata,Hyderabad"
 
