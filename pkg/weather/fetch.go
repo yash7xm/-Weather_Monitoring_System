@@ -15,7 +15,12 @@ type WeatherResponse struct {
 	Main struct {
 		Temp      float64 `json:"temp"`
 		FeelsLike float64 `json:"feels_like"`
+		Pressure  float64 `json:"pressure"`
+		Humidity  float64 `json:"humidity"`
 	} `json:"main"`
+	Wind struct {
+		Speed float64 `json:"speed"`
+	}
 	Weather []struct {
 		Main string `json:"main"`
 	} `json:"weather"`
