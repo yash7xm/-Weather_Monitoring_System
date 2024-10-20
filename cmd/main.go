@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/rs/cors"
 	"github.com/yash7xm/Weather_Monitoring_System/config"
 	"github.com/yash7xm/Weather_Monitoring_System/pkg/api"
 	db "github.com/yash7xm/Weather_Monitoring_System/pkg/storage"
@@ -30,6 +31,17 @@ func main() {
 	// Set up API routes
 	router := api.SetupRoutes()
 
+	// Enable CORS
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	})
+
+	// Wrap the router with the CORS handler
+	handler := corsHandler.Handler(router)
+
 	// Start server
 	port := config.Config.PORT
 	if port == "" {
@@ -37,7 +49,7 @@ func main() {
 	}
 
 	log.Printf("Server running on port %s", port)
-	if err := http.ListenAndServe(":"+port, router); err != nil {
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }
