@@ -1,11 +1,10 @@
 package config
 
 import (
-	"log"
+	// "log"
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 type ENV struct {
@@ -21,10 +20,10 @@ var Config ENV
 
 func Init() {
 	// Load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatalf("Error loading .env file")
+	// }
 
 	maxTempStr := os.Getenv("MAX_TEMPERATURE")
 	consecUpdatesStr := os.Getenv("CONSECUTIVE_UPDATES")
