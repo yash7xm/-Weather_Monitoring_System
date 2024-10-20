@@ -59,7 +59,7 @@ func FetchWeather(city string) (*WeatherResponse, error) {
 }
 
 func StartWeatherMonitoring() {
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(5 * time.Minute)
 	for range ticker.C {
 		for _, city := range []string{"Delhi", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Hyderabad"} {
 			go func(city string) {
